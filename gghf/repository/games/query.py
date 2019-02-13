@@ -39,3 +39,12 @@ def get_games(sort_by, search, genres, _type, limit, offset, region, platform, s
         result.append(game)
 
     return result
+
+def get_game(appid, platform, store):
+    game = db(platform).find_one({'appid': appid})
+    if game is None:
+        return None
+    game.pop('_id')
+    prices = game.pop('price_latest')[store]
+    game['price'] = prices
+    return game
