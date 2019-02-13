@@ -1,15 +1,17 @@
 import pymongo
 from gghf.repository import db_subscribers
 
-def get(device, platform, appid, region, limit, offset, sort_by):
-    query = {'sort': [], 'find': {'device': device}}
+def get(device = None, store = None, appid = None, region = None, limit = 0, offset = 0, sort_by = None):
+    query = {'sort': [], 'find': {}}
 
-    if platform is not None:
-        query['find']['platform'] = platform
+    if device is not None:
+        query['find']['device'] = device
+
+    if store is not None:
+        query['find']['store'] = store
 
     if appid is not None:
         query['find']['appid'] = appid
-        print(query)
 
     if region is not None:
         query['find']['region'] = region
