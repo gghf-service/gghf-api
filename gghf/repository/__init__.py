@@ -22,6 +22,3 @@ def bulk_update(platform, updates):
         db(platform).bulk_write(updates)
     except Exception as ex:
         print('Bulk update error', ex)
-        
-def db_subscribers():
-    return mongo[db_name].subscribers

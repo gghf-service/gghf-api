@@ -1,5 +1,5 @@
 import pymongo
-from gghf.repository import db_subscribers
+import gghf.repository.subscribers 
 
 def get(device = None, store = None, appid = None, region = None, limit = 0, offset = 0, sort_by = None):
     query = {'sort': [], 'find': {}}
@@ -24,8 +24,8 @@ def get(device = None, store = None, appid = None, region = None, limit = 0, off
         query['sort'] = [(key, value)]
     else:
         query['sort'] = [('created', pymongo.DESCENDING)]
-
-    found = db_subscribers().find(query['find']).sort(query['sort']).limit(limit).skip(offset)
+    
+    found = gghf.repository.subscribers.db().find(query['find']).sort(query['sort']).limit(limit).skip(offset)
 
     result = []
     for subscriber in found:

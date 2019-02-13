@@ -1,12 +1,11 @@
 from flask import Flask, request, jsonify, abort
 import gghf.repository.subscribers
 import gghf.repository.subscribers.query
-
-app = Flask(__name__)
+from . import routes
 
 supported_stores = ['steam', 'playstation']
 
-@app.route('/subscriber', methods=['POST'])
+@routes.route('/subscriber', methods=['POST'])
 def create_subscriber():
     if not request.json:
         abort(400)
@@ -27,7 +26,7 @@ def create_subscriber():
 
     return jsonify(success=True)
 
-@app.route('/subscriber', methods=['DELETE'])
+@routes.route('/subscriber', methods=['DELETE'])
 def delete_subscriber():
     if not request.json:
         abort(400)
@@ -47,7 +46,7 @@ def delete_subscriber():
 
     return jsonify(success=True)
 
-@app.route('/subscriber/<device>', methods=['PATCH'])
+@routes.route('/subscriber/<device>', methods=['PATCH'])
 def update_subscriber(device):
     if device is None or not request.json:
         abort(400)
@@ -63,7 +62,7 @@ def update_subscriber(device):
 
     abort(400)
 
-@app.route('/subscriber/<device>', methods=['GET'])
+@routes.route('/subscriber/<device>', methods=['GET'])
 def get_subscriber(device):
     if device is None or not request.json:
         abort(400)
@@ -80,7 +79,3 @@ def get_subscriber(device):
     result = gghf.repository.subscribers.query.get(device, store, appid, region, limit, offset, sort_by)
 
     return jsonify(result)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)

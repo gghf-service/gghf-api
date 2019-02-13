@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 import gghf.repository.games
-
+from routes import routes
 
 app = Flask(__name__)
+app.register_blueprint(routes)
+
 gghf.repository.db('desktop').create_index([('name', 'text')])
 
 
@@ -26,3 +28,6 @@ def games():
         sort_by, search, genres, _type, limit, offset, region, platform, store
     )
     return jsonify(result)
+
+if __name__ == '__main__':
+    app.run(debug=True)
