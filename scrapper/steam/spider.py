@@ -7,6 +7,11 @@ import gghf.repository
 import datetime
 import watchdog.steamdog
 
+import gghf.notification.firebase
+import gghf.repository.games.query
+
+current_platform = 'desktop'
+current_store = 'steam'
 
 def parse_game(game, appid):
     try:
@@ -66,7 +71,7 @@ def fetch_games_info(chunk, delay):
         fetched = json.loads(fetched)
         if fetched[appid]['data'].get('price_overview', None) is None:
             print('App probably is free, skipping price fetch', appid)
-            update_operations.append(gghf.repository.games.update.make(game, [], 'steam'))
+            update_operations.append(gghf.repository.games.update.make(game, [], current_store))
             time.sleep(delay)
             continue
 
@@ -86,6 +91,7 @@ def scrap(all_games):
 
     for chunk in make_chunk(all_games, rate_limit):
         games_prices, update_operations = fetch_games_info(chunk, delay)
+        notification_operations = []
 
         print('Fetching prices for appids')
         appids = list(map(lambda x: str(x['appid']), games_prices))
@@ -94,10 +100,15 @@ def scrap(all_games):
 
         # add the fetched price to model
         for game in games_prices:
-            operation = gghf.repository.games.update.make(game, prices[str(game['appid'])], 'steam')
+            operation = gghf.repository.games.update.make(game, prices[str(game['appid'])], current_store)
             update_operations.append(operation)
 
-        gghf.repository.bulk_update('desktop', update_operations)
+            db_game = gghf.repository.games.query.get_game(game['appid'], current_platform, current_store)
+            if db_game is not None:
+                notification_operations.extend(gghf.notification.firebase.message(game, current_store, prices[str(game['appid'])], db_game['price']))
+
+        gghf.notification.firebase.bulk_send(notification_operations)
+        gghf.repository.bulk_update(current_platform, update_operations)
         print('Updated chunk')
 
 
