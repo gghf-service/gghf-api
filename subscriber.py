@@ -4,7 +4,7 @@ import gghf.repository.subscribers.query
 
 app = Flask(__name__)
 
-supported_plarform = ['steam', 'playstation']
+supported_stores = ['steam', 'playstation']
 
 @app.route('/subscriber', methods=['POST'])
 def create_subscriber():
@@ -15,13 +15,13 @@ def create_subscriber():
     r = request.json
     for item in r:
         device = item.get('device')
-        platform = item.get('platform')
+        store = item.get('store')
         appid = item.get('appid')
-        region = item.get('region', 'us')
+        region = item.get('region', 'US').upper()
         
         # TODO check if appid exist in db
-        if device is not None and platform is not None and appid is not None:
-            update_operations.append(gghf.repository.subscribers.create(device, platform, appid, region))
+        if device is not None and store is not None and store in supported_stores and appid is not None:
+            update_operations.append(gghf.repository.subscribers.create(device, store, appid, region))
     
     gghf.repository.subscribers.bulk_update(update_operations)
 
@@ -36,24 +36,40 @@ def delete_subscriber():
     r = request.json
     for item in r:
         device = item.get('device')
-        platform = item.get('platform')
+        store = item.get('store')
         appid = item.get('appid')
         region = item.get('region')
         
         if device is not None:
-            update_operations.append(gghf.repository.subscribers.delete(device, platform, appid, region))
+            update_operations.append(gghf.repository.subscribers.delete(device, store, appid, region))
     
     gghf.repository.subscribers.bulk_update(update_operations)
 
     return jsonify(success=True)
 
+@app.route('/subscriber/<device>', methods=['PATCH'])
+def update_subscriber(device):
+    if device is None or not request.json:
+        abort(400)
+
+    r = request.json
+    new_device = r.get('device')
+
+    if new_device is not None:
+        update_operations = []
+        update_operations.append(gghf.repository.subscribers.action.update(device, new_device))
+        gghf.repository.subscribers.bulk_update(update_operations)
+        return jsonify(success=True)
+
+    abort(400)
+
 @app.route('/subscriber/<device>', methods=['GET'])
 def get_subscriber(device):
-    if device is None:
+    if device is None or not request.json:
         abort(400)
 
     r = request.args
-    platform = r.get('platform')
+    store = r.get('store')
     appid = r.get('appid')
     region = r.get('region')
 
@@ -61,7 +77,7 @@ def get_subscriber(device):
     offset = int(r.get('offset', 0))
     sort_by = r.get('sort_by')
 
-    result = gghf.repository.subscribers.query.get(device, platform, appid, region, limit, offset, sort_by)
+    result = gghf.repository.subscribers.query.get(device, store, appid, region, limit, offset, sort_by)
 
     return jsonify(result)
 
