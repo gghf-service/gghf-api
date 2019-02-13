@@ -185,4 +185,10 @@ dmypy.json
 *_steam_info.txt
 gghf.pem
 
+# firebase secret
+private/
+
+#logs
+logs/
+
 # End of https://www.gitignore.io/api/code,flask,python
