@@ -22,7 +22,7 @@ def message(game, store, latest_prices, previous_prices):
             # TODO set correct condition when send
             if l_price['final'] != region_price['final']:
                 subscribers = gghf.repository.subscribers.query.get(appid=str(game['appid']), store=store, region=l_price['region'])
-                print(len(subscribers))
+
                 if subscribers:
                     topic = '{0}{1}{2}'.format(store, game['appid'], l_price['region'])
 

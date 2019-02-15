@@ -3,8 +3,6 @@ import gghf.repository.subscribers
 import gghf.repository.subscribers.query
 from . import routes
 
-supported_stores = ['steam', 'playstation']
-
 @routes.route('/subscriber', methods=['POST'])
 def create_subscriber():
     if not request.json:
@@ -19,7 +17,7 @@ def create_subscriber():
         region = item.get('region', 'US').upper()
         
         # TODO check if appid exist in db
-        if device is not None and store is not None and store in supported_stores and appid is not None:
+        if device is not None and store is not None and store in gghf.supported_stores and appid is not None:
             update_operations.append(gghf.repository.subscribers.create(device, store, appid, region))
     
     gghf.repository.subscribers.bulk_update(update_operations)
@@ -64,7 +62,7 @@ def update_subscriber(device):
 
 @routes.route('/subscriber/<device>', methods=['GET'])
 def get_subscriber(device):
-    if device is None or not request.json:
+    if device is None:
         abort(400)
 
     r = request.args
